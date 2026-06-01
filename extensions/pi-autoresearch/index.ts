@@ -286,6 +286,7 @@ function fmtNum(n: number, decimals: number = 0): string {
   return commas(n);
 }
 
+/** Format a metric value with its unit: null → "—", integers without decimals, fractionals with 2 */
 function formatNum(value: number | null, unit: string): string {
   if (value === null) return "—";
   const u = unit || "";
@@ -361,6 +362,7 @@ function isAutoresearchShCommand(command: string): boolean {
   return /^(?:(?:bash|sh|source)\s+(?:-\w+\s+)*)?(?:\.\/|\/[\w/.-]*\/)?autoresearch\.sh(?:\s|$)/.test(cmd);
 }
 
+/** Whether `current` is an improvement over `best` for the given optimization direction */
 function isBetter(
   current: number,
   best: number,
@@ -512,6 +514,7 @@ const autoresearchChecksPath = (dir: string) => path.join(dir, "autoresearch.che
 const autoresearchScriptPath = (dir: string) => path.join(dir, "autoresearch.sh");
 const autoresearchConfigPath = (dir: string) => path.join(dir, "autoresearch.config.json");
 
+/** 1-based run number of the segment's first (baseline) experiment within all results, or null if none */
 function findBaselineRunNumber(results: ExperimentResult[], segment: number): number | null {
   const index = results.findIndex((result) => result.segment === segment);
   return index >= 0 ? index + 1 : null;
@@ -550,6 +553,7 @@ function findBaselineSecondary(
   return base;
 }
 
+/** Deep-clone experiment state so nested results/metrics can be mutated without affecting the original */
 function cloneExperimentState(state: ExperimentState): ExperimentState {
   return {
     ...state,
@@ -561,15 +565,18 @@ function cloneExperimentState(state: ExperimentState): ExperimentState {
   };
 }
 
+/** Clamp a number to the [min, max] range */
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+/** Truncate text to a terminal display width, appending "…"; returns "" when width ≤ 0 */
 function truncateDisplayText(text: string, width: number): string {
   if (width <= 0) return "";
   return truncateToWidth(text, width, "…", true);
 }
 
+/** Concatenate parts left-to-right, truncating with "…" once they would exceed the given width */
 function joinPartsToWidth(parts: string[], width: number): string {
   let line = "";
   for (const part of parts) {
@@ -584,6 +591,13 @@ function joinPartsToWidth(parts: string[], width: number): string {
   return truncateToWidth(line, width, "…", true);
 }
 
+/**
+ * Render `left` with a right-aligned hint padded out to `width`.
+ *
+ * Picks the first candidate hint that fits the available width. When the left
+ * text plus the hint overflow, the left text is truncated (with "…") to make
+ * room for the hint. Falls back to just the truncated left text if no hint fits.
+ */
 function appendRightAlignedAdaptiveHint(
   left: string,
   width: number,
@@ -607,6 +621,7 @@ function appendRightAlignedAdaptiveHint(
   return truncateToWidth(left, width, "…", true);
 }
 
+/** Terminal size from the TUI, falling back to process.stdout, then 120×40 */
 function getTuiSize(tui: { terminal?: { columns?: number; rows?: number } }): { width: number; height: number } {
   return {
     width: tui.terminal?.columns ?? process.stdout.columns ?? 120,
@@ -614,6 +629,7 @@ function getTuiSize(tui: { terminal?: { columns?: number; rows?: number } }): { 
   };
 }
 
+/** Create a fresh, empty experiment state with default field values */
 function createExperimentState(): ExperimentState {
   return {
     results: [],
@@ -629,6 +645,7 @@ function createExperimentState(): ExperimentState {
   };
 }
 
+/** Create a fresh per-session runtime (flags, counters, timers) wrapping a new experiment state */
 function createSessionRuntime(): AutoresearchRuntime {
   return {
     autoresearchMode: false,
@@ -644,6 +661,10 @@ function createSessionRuntime(): AutoresearchRuntime {
   };
 }
 
+/**
+ * Create a store of per-session runtimes keyed by session id.
+ * `ensure` returns the existing runtime or lazily creates one; `clear` removes it.
+ */
 function createRuntimeStore() {
   const runtimes = new Map<string, AutoresearchRuntime>();
 
