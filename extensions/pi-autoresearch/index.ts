@@ -21,8 +21,8 @@ import type {
 } from "@earendil-works/pi-coding-agent";
 import { truncateTail, DEFAULT_MAX_BYTES, DEFAULT_MAX_LINES, formatSize } from "@earendil-works/pi-coding-agent";
 import { StringEnum } from "@earendil-works/pi-ai";
-import { Text, truncateToWidth, matchesKey, visibleWidth } from "@earendil-works/pi-tui";
-import { Type } from "@sinclair/typebox";
+import { Text, truncateToWidth, matchesKey, visibleWidth, type KeyId } from "@earendil-works/pi-tui";
+import { Type } from "typebox";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -209,8 +209,7 @@ export const LogParams = Type.Object({
     description: "Short description of what this experiment tried",
   }),
   metrics: Type.Optional(
-    Type.Object({}, {
-      additionalProperties: Type.Number(),
+    Type.Record(Type.String(), Type.Number(), {
       description:
         'Additional metrics to track as { name: value } pairs, e.g. { "compile_µs": 4200, "render_µs": 9800 }. These are shown alongside the primary metric for tradeoff monitoring.',
     })
@@ -1645,7 +1644,7 @@ export default function autoresearchExtension(pi: ExtensionAPI) {
       return new Text(text, 0, 0);
     },
 
-    renderResult(result, _options, theme) {
+    renderResult(result, _options, _theme) {
       const t = result.content[0];
       return new Text(t?.type === "text" ? t.text : "", 0, 0);
     },
@@ -2545,7 +2544,7 @@ export default function autoresearchExtension(pi: ExtensionAPI) {
   // -----------------------------------------------------------------------
 
   if (shortcuts.toggleDashboard) {
-    pi.registerShortcut(shortcuts.toggleDashboard, {
+    pi.registerShortcut(shortcuts.toggleDashboard as KeyId, {
       description: "Toggle autoresearch dashboard",
       handler: async (ctx) => {
         const runtime = getRuntime(ctx);
@@ -2569,7 +2568,7 @@ export default function autoresearchExtension(pi: ExtensionAPI) {
   // -----------------------------------------------------------------------
 
   if (shortcuts.fullscreenDashboard) {
-    pi.registerShortcut(shortcuts.fullscreenDashboard, {
+    pi.registerShortcut(shortcuts.fullscreenDashboard as KeyId, {
       description: "Fullscreen autoresearch dashboard",
       handler: async (ctx) => {
         const runtime = getRuntime(ctx);
